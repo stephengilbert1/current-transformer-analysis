@@ -1,0 +1,15 @@
+﻿force_N,line_current_A,power_min_W,power_max_W,ct
+0,5.2,0,0,Silicone steel core
+0,100.4,0,0,Silicone steel core
+5,5.2,0.06,0.06,Silicone steel core
+5,100.4,2.1,2.3,Silicone steel core
+10,5.2,0.06,0.06,Silicone steel core
+10,100.4,2.1,2.3,Silicone steel core
+15,5.2,0.06,0.06,Silicone steel core
+15,100.4,2.1,2.3,Silicone steel core
+20,5.2,0.07,0.07,Silicone steel core
+20,100.4,2.1,2.3,Silicone steel core
+25,5.2,0.07,0.07,Silicone steel core
+25,100.4,2.1,2.3,Silicone steel core
+30,5.2,0.07,0.07,Silicone steel core
+30,100.4,2.1,2.3,Silicone steel core
