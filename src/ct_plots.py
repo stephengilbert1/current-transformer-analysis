@@ -1,11 +1,17 @@
 import matplotlib.pyplot as plt
 
-def plot_trial(df, x, y, xlabel=None, ylabel=None):
-    """Plot y vs x with house style. Returns (fig, ax); caller sets titles."""
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(df[x], df[y], marker="o", markersize=5, linewidth=1.5)
+FORCE_UNITS = {
+    "N":   ("force_N",   "Force (N)"),
+    "lbf": ("force_lbf", "Force (lbf)"),
+}
 
-    ax.set_xlabel(xlabel or x)
+def plot_trial(df, y, force_unit="N", ylabel=None):
+    col, xlabel = FORCE_UNITS[force_unit]
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.plot(df[col], df[y], marker="o", markersize=5, linewidth=1.5)
+
+    ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel or y, rotation=0, ha="right", va="center")
     ax.yaxis.set_label_coords(-0.02, 1.02)
 
@@ -16,5 +22,10 @@ def plot_trial(df, x, y, xlabel=None, ylabel=None):
     return fig, ax
 
 def condition_subtitle(df):
-    line, load, ct = df["line_current_A"].iloc[0], df["load_V"].iloc[0], df["ct"].iloc[0]
-    return f"Line Current = {line} A   |   Load = {load} V   |   CT = {ct}"
+    current_start = df["line_current_A"].iloc[0]
+    current_end   = df["line_current_A"].iloc[-1]
+    load_min      = df["load_V"].min()
+    load_max      = df["load_V"].max()
+    ct            = df["ct"].iloc[0]
+    return (f"Line Current = {current_start}–{current_end} A   |   "
+            f"Load = {load_min}–{load_max} V   |   CT = {ct}")

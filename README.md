@@ -21,8 +21,7 @@ from ct_data import load_trial
 from ct_plots import plot_trial
 
 df = load_trial("003")
-fig, ax = plot_trial(df, "force_lbf", "power_mW",
-                     xlabel="Force (lbf)", ylabel="Power (mW)")
+fig, ax = plot_trial(df, "power_mW", force_unit="N", ylabel="Power (mW)")
 ```
 
 ## Structure

@@ -25,6 +25,10 @@ def load_ct_data(path):
     df["trial_id"]=parts[1]
     df["date"]=pd.to_datetime(parts[2])
 
+    # --- derived columns (not measurements) ---
+    df["power_mW"] = (df["output_uA"] * 1e-3) * df["load_V"]
+    df["force_lbf"] = df["force_N"] * 0.224809
+
     missing = EXPECTED - set(df.columns)
     assert not missing, f"{path.name}: missing columns {missing}"
 
