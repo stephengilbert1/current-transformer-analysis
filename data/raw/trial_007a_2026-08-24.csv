@@ -1,0 +1,15 @@
+﻿force_N,line_current_A,power_min_W,power_max_W,output_uA_ave,output_uA_max,load_V,ct,Power (mW)
+1,5.3,0.09,0.1,16870,31610,5,Nanocrystalline,84.35
+2,5.3,0.09,0.1,16900,32710,5,Nanocrystalline,84.5
+3,5.2,0.09,0.1,16820,32710,5,Nanocrystalline,84.1
+4,5.2,0.09,0.1,16730,32610,5,Nanocrystalline,83.65
+5,5.2,0.09,0.1,16750,32760,5,Nanocrystalline,83.75
+10,5.2,0.09,0.1,16840,33060,5,Nanocrystalline,84.2
+15,5.2,0.09,0.1,16950,33310,5,Nanocrystalline,84.75
+20,5.2,0.09,0.1,17000,33560,5,Nanocrystalline,85
+25,5.2,0.09,0.1,17010,33410,5,Nanocrystalline,85.05
+50,5.2,0.1,0.11,17270,34110,5,Nanocrystalline,86.35
+100,5.1,0.1,0.11,17620,34860,5,Nanocrystalline,88.1
+150,5.1,0.1,0.11,17820,35310,5,Nanocrystalline,89.1
+200,5.1,0.1,0.11,18010,35710,5,Nanocrystalline,90.05
+250,5.1,0.1,0.11,18140,35910,5,Nanocrystalline,90.7

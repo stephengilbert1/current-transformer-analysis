@@ -13,8 +13,13 @@ pip install -r requirements.txt
 
 ## Usage
 
-Raw test data lives in `data/raw/`, one CSV per trial
-(`trial_003_2026-08-12.csv`). Load and plot a trial from a notebook:
+Raw test data lives in `data/raw/`, one CSV per trial (`trial_NNN_YYYY-MM-DD.csv`). 
+
+Each CSV holds one or more sweeps, identified by `specimen_id` and
+`replicate`. Required columns: `test_date`, `specimen_id`, `replicate`,
+`force_N`, `line_current_A`, `output_uA`, `load_V`.
+
+Load and plot a trial from a notebook:
 
 ```python
 from ct_data import load_trial
