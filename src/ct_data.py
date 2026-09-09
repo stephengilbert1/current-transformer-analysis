@@ -51,3 +51,19 @@ def load_trial(trial_id):
     return load_ct_data(matches[0])
 
 
+def load_benchmarks(benchmark_id):
+    matches = list(RAW_DIR.glob(f"benchmark_{benchmark_id}_*.csv"))
+    if len(matches) != 1:
+        raise FileNotFoundError(f"benchmark_{benchmark_id}: expected one file, found {len(matches)}")
+    df = pd.read_csv(matches[0])
+
+    measure_cols = ["line_current_A", "output_uA", "load_V"]
+    for c in measure_cols:
+        if not pd.api.types.is_numeric_dtype(df[c]) or df[c].isna().any():
+            raise ValueError(f"benchmark_{benchmark_id}: {c} must be numeric and non-null")
+    if df["clamp_method"].isna().any():
+        raise ValueError(f"benchmark_{benchmark_id}: clamp_method must be non-null")
+
+    df["benchmark_id"] = benchmark_id
+    df["power_mW"] = df["output_uA"] * df["load_V"] * 1e-3
+    return df

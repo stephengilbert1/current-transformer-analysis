@@ -1,0 +1,13 @@
+﻿test_date,specimen_id,replicate,clamp_method,clamp_torque_inlb,line_current_A,output_uA,load_V
+2026-09-09,B2D3,1,POC 1.0 Enclosure,,5.0,16.6,3.35
+2026-09-09,B2D4,1,POC 1.0 Enclosure,,5.0,7650,5.0
+2026-09-09,B2D9,1,POC 1.0 Enclosure,,5.0,922,5.0
+2026-09-09,B2D3,1,Screw Clamp V1,6,5.0,14900,5.0
+2026-09-09,B2D4,1,Screw Clamp V1,6,5.0,13990,5.0
+2026-09-09,B2D9,1,Screw Clamp V1,6,5.0,15900,5.0
+2026-09-09,B2D3,1,Screw Clamp V2,5.9,5.0,17450,5.0
+2026-09-09,B2D4,1,Screw Clamp V2,8,5.0,17250,5.0
+2026-09-09,B2D9,1,Screw Clamp V2,5.8,5.0,19360,5.0
+2026-09-09,B2D3,1,Quickgrip,,5.0,18300,5.0
+2026-09-09,B2D4,1,Quickgrip,,5.0,18540,5.0
+2026-09-09,B2D9,1,Quickgrip,,5.0,17800,5.0
