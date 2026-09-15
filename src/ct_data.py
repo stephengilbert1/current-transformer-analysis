@@ -1,6 +1,8 @@
 from pathlib import Path
 import pandas as pd
 RAW_DIR = Path("../data/raw")
+SPECIMEN_PATH = Path("../data/reference/specimens.csv")
+SPECIMENS = pd.read_csv(SPECIMEN_PATH)[["specimen_id", "id_mm", "material"]]
 
 RENAME = {
     "Newtons (N)": "force_N",
@@ -23,17 +25,22 @@ def load_ct_data(path):
     df = pd.read_csv(path)
     df.columns = df.columns.str.strip()
     df = df.rename(columns=RENAME)
+    df["specimen_id"] = df["specimen_id"].str.strip()
+    
 
-    df["trial_id"] = path.stem.split("_")[1]   # provenance tag from filename
-
-    # --- validate ---
+    df["trial_id"] = path.stem.split("_")[1]
     missing = EXPECTED - set(df.columns)
     assert not missing, f"{path.name}: missing columns {missing}"
 
     for col in ["force_N", "line_current_A", "output_uA", "load_V", "replicate"]:
         assert pd.api.types.is_numeric_dtype(df[col]), f"{path.name}: {col} not numeric"
 
-    # --- derived columns  ---
+    df = df.merge(SPECIMENS, on="specimen_id", how="left",
+        validate="many_to_one", indicator=True)
+    unregistered = df.loc[df["_merge"] == "left_only", "specimen_id"].unique()
+    assert len(unregistered) == 0, f"{path.name}: specimens not in registry: {unregistered}"
+    df = df.drop(columns="_merge")
+
     df["test_date"] = pd.to_datetime(df["test_date"])
     df["power_mW"] = (df["output_uA"] * 1e-3) * df["load_V"]
     df["force_lbf"] = df["force_N"] * 0.224809

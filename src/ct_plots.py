@@ -54,21 +54,30 @@ def condition_subtitle(df):
     return (f"Line Current = {current_start}–{current_end} A   |   "
             f"Load = {load_min}–{load_max} V   |   CT = {ct}")
 
-def comparison_subtitle(dfs):
+def comparison_subtitle(dfs, x="force_N"):
     """Full current/voltage envelope across all trials; CT type only if shared."""
     i_min = min(df["line_current_A"].min() for df in dfs)
     i_max = max(df["line_current_A"].max() for df in dfs)
     v_min = min(df["load_V"].min() for df in dfs)
     v_max = max(df["load_V"].max() for df in dfs)
 
-    parts = [
-        f"Line Current = {i_min}–{i_max} A",
-        f"Load = {v_min}–{v_max} V",
-    ]
+    parts = []
+    if x != "line_current_A":
+        parts.append(f"Line Current = {_envelope(i_min, i_max, 'A')}")
+        
+    parts.append(f"Load = {_envelope(v_min, v_max, 'V')}")
+
+    diameter = {df["id_mm"].iloc[0] for df in dfs}
+    if len(diameter) == 1:
+        parts.append(f"Internal Diameter = {next(iter(diameter))} mm")
 
     cts = {df["specimen_id"].iloc[0] for df in dfs}
     if len(cts) == 1:
         parts.append(f"CT = {next(iter(cts))}")
+
+    forces = {v for df in dfs for v in df["force_N"].unique()}
+    if len(forces) == 1:
+        parts.append(f"Clamp Force = {next(iter(forces))} N")
 
     return "   |   ".join(parts)
 
@@ -116,16 +125,16 @@ def plot_trial(df, y, force_unit="N", ylabel=None):
 
 # Comparison plots
 
-def compare_sweeps(trial_ids, xlim=None, y="power_mW"):
+def compare_sweeps(trial_ids, x="force_N", xlabel="Force (N)", xlim=None, y="power_mW"):
     """Compare sweeps across one or more trials. Each sweep (specimen×replicate)
     draws as one line, coloured by specimen."""
     sweeps = load_all_sweeps(trial_ids)
     frames = [df for _key, df in sweeps]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    _draw_comparison(ax, frames, xlim=xlim, y=y)
+    _draw_comparison(ax, frames, x, xlabel, xlim=xlim, y=y)
     _add_sweep_legend(ax, sweeps)
-    ax.set_title(comparison_subtitle(frames), fontsize=9)
+    ax.set_title(comparison_subtitle(frames,x=x), fontsize=9)
     ax.set_ylabel("Power (mW)", rotation=0, ha="right", va="center")
     ax.yaxis.set_label_coords(-0.02, 1.02)
     fig.text(0.02, -0.02, date_span_annotation(frames), ha="left", fontsize=8, color="gray")
@@ -148,25 +157,49 @@ def compare_sweeps_dual(trial_ids, zoom=(0, 10), y="power_mW"):
     fig.text(0.02, -0.02, date_span_annotation(frames), ha="left", fontsize=8, color="gray")
     return fig, (ax_full, ax_zoom)
 
-def _draw_comparison(ax, dfs, xlim=None, y="power_mW"):
-    colors = _resolve_colors(dfs)
-    for df, color in zip(dfs, colors):
-        ax.plot(
-            df["force_N"], df[y],
-            marker="o", color=color,
-            markersize=3, linewidth=1.5,
-        )
+def compare_sweeps_grouped(trial_ids, key_col, color_map, legend_title,
+                           x="force_N", xlabel="Force (N)", xlim=None, y="power_mW"):
+    """Compare sweeps grouped by a constant-per-group attribute (e.g. id_mm,
+    line_current_A). Specimen is replication, not an encoding — lines sharing
+    a group share a colour, and the spread between them shows the sample."""
+    sweeps = load_all_sweeps(trial_ids)
+    frames = [
+    sub
+    for _key, df in sweeps
+    for _val, sub in df.groupby(key_col, sort=True)
+]
+
+    colors, handles = _group_aesthetic(frames, key_col, color_map)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    _draw_comparison(ax, frames, x, xlabel, xlim=xlim, y=y, colors=colors)   # no linestyles → solid
+
+    ax.legend(handles=handles, title=legend_title, fontsize=8)
+    ax.set_ylabel("Power (mW)", rotation=0, ha="right", va="center")
+    ax.yaxis.set_label_coords(-0.02, 1.02)
+    fig.text(0.02, -0.02, date_span_annotation(frames), ha="left", fontsize=8, color="gray")
+    return fig, ax
+
+def _draw_comparison(ax, dfs, x="force_N", xlabel="Force (N)",
+                     xlim=None, y="power_mW", colors=None, linestyles=None):
+    if colors is None:
+        colors = _resolve_colors(dfs)
+    if linestyles is None:
+        linestyles = ["-"] * len(dfs)
+    for df, color, ls in zip(dfs, colors, linestyles):
+        ax.plot(df[x], df[y], marker="o", color=color,
+                linestyle=ls, markersize=3, linewidth=1.5)
 
     if xlim is not None:
         ax.set_xlim(*xlim)
-        visible = pd.concat([df.loc[df["force_N"].between(*xlim), y] for df in dfs])
+        visible = pd.concat([df.loc[df[x].between(*xlim), y] for df in dfs])
         ax.set_ylim(visible.min(), visible.max() * 1.1)
 
     if xlim is None:
         ax.set_xlim(left=0)
         ax.set_ylim(bottom=0)
 
-    ax.set_xlabel("Force (N)")
+    ax.set_xlabel(xlabel)
     ax.grid(True, alpha=0.3)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -183,6 +216,16 @@ def _add_sweep_legend(ax, sweeps):
     handles = [Line2D([0], [0], color=specimen_color(s), marker="o",
                       linewidth=1.5, label=s) for s in specimens]
     ax.legend(handles=handles, title="Specimen", fontsize=8)
+
+def _group_aesthetic(frames, key_col, mapping):
+    """Constant aesthetic per group: returns (per-frame values, one legend handle per group)."""
+    values  = [mapping[df[key_col].iloc[0]] for df in frames]
+    handles = [Line2D([0],[0], color=c, lw=1.5, label=str(k)) for k, c in mapping.items()]
+    return values, handles
+
+def _envelope(lo, hi, unit):
+    """Range when the endpoints differ, single value when they coincide."""
+    return f"{lo}–{hi} {unit}" if lo != hi else f"{lo} {unit}"
 
 
 
