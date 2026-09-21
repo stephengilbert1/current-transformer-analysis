@@ -29,7 +29,7 @@ def specimen_color(specimen):
 
 
 def _resolve_colors(dfs):
-    """One colour per CT sample"""
+    """One colour per CT specimen"""
     return [specimen_color(df["specimen_id"].iloc[0]) for df in dfs]
 
 

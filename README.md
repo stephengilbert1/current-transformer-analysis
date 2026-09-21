@@ -1,7 +1,14 @@
-# current-transformer-analysis
+# ct-analysis
 
-Reproducible pipeline for loading, processing, and charting current
-transformer (CT) test data including force, output current and power across trials.
+Reproducible pipeline for loading, validating and plotting current
+transformer (CT) power-harvesting test data. Used for analysing how harvested
+power responds to clamping force and line current across specimen
+geometries and constructions.
+
+Analysis logic lives in `src/`, narrative and editorial decisions live
+in the notebooks which read as standalone analyses.
+
+![Power harvested vs line current across POC 2.0 CTs](figures/sample_output.png)
 
 ## Setup
 
@@ -11,28 +18,41 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Data
+
+Raw test data lives in `data/raw/` one CSV per trial
+(`trial_NNN_YYYY-MM-DD.csv`). Each holds one or more sweeps, identified
+by `specimen_id` and `replicate`.
+
+Required columns: `test_date`, `specimen_id`, `replicate`, `force_N`,
+`line_current_A`, `output_uA`, `load_V`. `power_mW` and `force_lbf` are
+derived at load time.
+
+Specimen attributes (`id_mm`, `material`, `batch`, `notes`) live in
+`data/reference/specimens.csv` and are merged onto each trial by
+`specimen_id`. Benchmark point-measurements load via `load_benchmarks()`
+with a related schema (clamp method instead of a force sweep).
+
 ## Usage
-
-Raw test data lives in `data/raw/`, one CSV per trial (`trial_NNN_YYYY-MM-DD.csv`). 
-
-Each CSV holds one or more sweeps, identified by `specimen_id` and
-`replicate`. Required columns: `test_date`, `specimen_id`, `replicate`,
-`force_N`, `line_current_A`, `output_uA`, `load_V`.
-
-Load and plot a trial from a notebook:
 
 ```python
 from ct_data import load_trial
-from ct_plots import plot_trial
+from ct_plots import compare_sweeps
 
-df = load_trial("003")
-fig, ax = plot_trial(df, "power_mW", force_unit="N", ylabel="Power (mW)")
+# force sweep
+fig, ax = compare_sweeps(["003"])
+
+# current sweep
+fig, ax = compare_sweeps(["012"], x="line_current_A", xlabel="Line Current (A)")
 ```
 
 ## Structure
 
-- `data/raw/` — raw trial CSVs (immutable)
-- `src/ct_data.py` — loading, cleaning, derived columns
+- `data/raw/` — raw trial CSVs
+- `data/reference/specimens.csv` — specimen registry
+- `src/ct_data.py` — loading, validation, derived columns
 - `src/ct_plots.py` — reusable styled plotting
-- `notebooks/` — per-analysis exploration
+- `notebooks/01-force-response.ipynb` — force sweep analysis
+- `notebooks/02-current-response.ipynb` — current sweep analysis
+- `notebooks/exploratory/` — scratch work
 - `figures/` — generated charts
