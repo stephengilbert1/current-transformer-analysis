@@ -18,7 +18,7 @@ Power harvested rises linearly with line current, measured across three
 POC 2.0 specimens at a fixed 100 N clamp force:
 
 <p align="center">
-    <img src="figures/sample_output.png" alt="Power vs line current, three POC 2.0 CTs" width="480">
+    <img src="figures/sample_output.png" alt="Power vs line current, three POC 2.0 CT's" width="480">
 </p>
 
 Each line is one specimen the tight grouping shows consistent
@@ -51,7 +51,6 @@ with a related schema (clamp method instead of a force sweep).
 ## Usage
 
 ```python
-from ct_data import load_trial
 from ct_plots import compare_sweeps
 
 # force sweep
@@ -65,6 +64,7 @@ fig, ax = compare_sweeps(["012"], x="line_current_A", xlabel="Line Current (A)")
 
 - `data/raw/` — raw trial CSVs
 - `data/reference/specimens.csv` — specimen registry
+- `docs` - project supporting documentation and figures
 - `src/ct_data.py` — loading, validation, derived columns
 - `src/ct_plots.py` — reusable styled plotting
 - `notebooks/01-force-response.ipynb` — force sweep analysis
