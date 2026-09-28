@@ -42,11 +42,21 @@ def load_sweeps(trial_id):
     return list(df.groupby(["specimen_id", "replicate"], sort=True))
 
 
-def load_all_sweeps(trial_ids):
-    """Explode several trials into one flat list of sweeps, globally sorted."""
+def load_all_sweeps(trial_ids, specimens=None):
+    """Explode several trials into one flat list of sweeps, globally sorted.
+    Optionally keep only the given specimen IDs."""
     sweeps = []
     for tid in trial_ids:
         sweeps.extend(load_sweeps(tid))
+
+    if specimens is not None:
+        wanted = set(specimens)
+        found = {sp for (sp, _r), _df in sweeps}
+        missing = wanted - found
+        if missing:
+            raise ValueError(f"Specimens not in trials {trial_ids}: {sorted(missing)}")
+        sweeps = [item for item in sweeps if item[0][0] in wanted]
+
     sweeps.sort(key=lambda item: item[0])
     return sweeps
 
@@ -107,10 +117,12 @@ def date_span_annotation(dfs):
 # Comparison plots
 
 
-def compare_sweeps(trial_ids, x="force_N", xlabel="Force (N)", xlim=None, y="power_mW"):
+def compare_sweeps(
+    trial_ids, x="force_N", xlabel="Force (N)", xlim=None, y="power_mW", specimens=None
+):
     """Compare sweeps across one or more trials. Each sweep (specimen×replicate)
     draws as one line, coloured by specimen."""
-    sweeps = load_all_sweeps(trial_ids)
+    sweeps = load_all_sweeps(trial_ids, specimens=specimens)
     frames = [df for _key, df in sweeps]
 
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -134,16 +146,18 @@ def compare_sweeps_grouped(
     xlabel="Force (N)",
     xlim=None,
     y="power_mW",
+    specimens=None,
+    labels=None,
 ):
     """Compare sweeps grouped by a constant-per-group attribute (e.g. id_mm,
     line_current_A). Specimen is replication, not an encoding — lines sharing
     a group share a colour, and the spread between them shows the sample."""
-    sweeps = load_all_sweeps(trial_ids)
+    sweeps = load_all_sweeps(trial_ids, specimens=specimens)
     frames = [
         sub for _key, df in sweeps for _val, sub in df.groupby(key_col, sort=True)
     ]
 
-    colors, handles = _group_aesthetic(frames, key_col, color_map)
+    colors, handles = _group_aesthetic(frames, key_col, color_map, labels=labels)
 
     fig, ax = plt.subplots(figsize=(8, 5))
     _draw_comparison(
@@ -224,10 +238,12 @@ def _add_sweep_legend(ax, sweeps):
     ax.legend(handles=handles, title="Specimen", fontsize=8)
 
 
-def _group_aesthetic(frames, key_col, mapping):
+def _group_aesthetic(frames, key_col, mapping, labels=None):
     """Constant aesthetic per group: returns (per-frame values, one legend handle per group)."""
+    labels = labels or {}
     values = [mapping[df[key_col].iloc[0]] for df in frames]
     handles = [
-        Line2D([0], [0], color=c, lw=1.5, label=str(k)) for k, c in mapping.items()
+        Line2D([0], [0], color=c, lw=1.5, label=labels.get(k, str(k)))
+        for k, c in mapping.items()
     ]
     return values, handles
