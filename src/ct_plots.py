@@ -30,7 +30,7 @@ def specimen_color(specimen):
 
 def _resolve_colors(dfs):
     """One colour per CT specimen"""
-    return [specimen_color(df["specimen_id"].iloc[0]) for df in dfs]
+    return [specimen_color(df["specimen_id"].iat[0]) for df in dfs]
 
 
 # data shaping
@@ -82,11 +82,11 @@ def comparison_subtitle(dfs, x="force_N"):
 
     parts.append(f"Load = {_envelope(v_min, v_max, 'V')}")
 
-    diameter = {df["id_mm"].iloc[0] for df in dfs}
+    diameter = {df["id_mm"].iat[0] for df in dfs}
     if len(diameter) == 1:
         parts.append(f"Internal Diameter = {next(iter(diameter))} mm")
 
-    cts = {df["specimen_id"].iloc[0] for df in dfs}
+    cts = {df["specimen_id"].iat[0] for df in dfs}
     if len(cts) == 1:
         parts.append(f"CT = {next(iter(cts))}")
 
@@ -98,8 +98,8 @@ def comparison_subtitle(dfs, x="force_N"):
 
 
 def date_span_annotation(dfs):
-    tids = sorted({df["trial_id"].iloc[0] for df in dfs})
-    dates = sorted(df["test_date"].iloc[0].strftime("%Y-%m-%d") for df in dfs)
+    tids = sorted({df["trial_id"].iat[0] for df in dfs})
+    dates = sorted(df["test_date"].iat[0].strftime("%Y-%m-%d") for df in dfs)
 
     if len(tids) == 1:
         trial_part = f"Trial {tids[0]}"
@@ -222,7 +222,7 @@ def _add_sweep_legend(ax, sweeps):
         df = next(d for (sp, _r), d in sweeps if sp == s)
         if "notes" not in df.columns:  # column absent → no annotation
             return None
-        val = df["notes"].iloc[0]
+        val = df["notes"].iat[0]
         return None if pd.isna(val) else val
 
     def label(s):
