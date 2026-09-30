@@ -241,9 +241,7 @@ def _add_sweep_legend(ax, sweeps):
 def _group_aesthetic(frames, key_col, mapping, labels=None):
     """Constant aesthetic per group: returns (per-frame values, one legend handle per group)."""
     labels = labels or {}
-    values = [mapping[df[key_col].iloc[0]] for df in frames]
-    handles = [
-        Line2D([0], [0], color=c, lw=1.5, label=labels.get(k, str(k)))
-        for k, c in mapping.items()
-    ]
+    values = [mapping[df[key_col].iat[0]] for df in frames]
+    entries = dict.fromkeys((c, labels.get(k, str(k))) for k, c in mapping.items())
+    handles = [Line2D([0], [0], color=c, lw=1.5, label=lbl) for c, lbl in entries]
     return values, handles
