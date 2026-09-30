@@ -5,9 +5,8 @@ import pandas as pd
 _ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = _ROOT / "data" / "raw"
 SPECIMEN_PATH = _ROOT / "data" / "reference" / "specimens.csv"
-SPECIMENS = pd.read_csv(SPECIMEN_PATH)[
-    ["specimen_id", "id_mm", "material", "batch", "notes"]
-]
+SPECIMEN_COLS = ["specimen_id", "id_mm", "material", "batch", "notes"]
+
 
 RENAME = {
     "Newtons (N)": "force_N",
@@ -48,6 +47,11 @@ def _derive_power(df):
 # loaders
 
 
+def load_specimens():
+    """Specimen registry: one row per specimen_id."""
+    return pd.read_csv(SPECIMEN_PATH)[SPECIMEN_COLS]
+
+
 def load_ct_data(path):
     """Load one trial CSV into a tidy DataFrame with derived power/force columns."""
     path = Path(path)
@@ -65,9 +69,12 @@ def load_ct_data(path):
     for col in ["force_N", "line_current_A", "output_uA", "load_V", "replicate"]:
         if not pd.api.types.is_numeric_dtype(df[col]):
             raise ValueError(f"{path.name}: {col} not numeric")
-
     df = df.merge(
-        SPECIMENS, on="specimen_id", how="left", validate="many_to_one", indicator=True
+        load_specimens(),
+        on="specimen_id",
+        how="left",
+        validate="many_to_one",
+        indicator=True,
     )
     unregistered = df.loc[df["_merge"] == "left_only", "specimen_id"].unique()
     if len(unregistered):
