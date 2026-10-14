@@ -25,6 +25,8 @@ EXPECTED = {
     "replicate",
 }
 
+OPTIONAL = {"offset_mm": 0.0}
+
 
 # helpers
 
@@ -59,6 +61,11 @@ def load_ct_data(path):
     df = pd.read_csv(path)
     df.columns = df.columns.str.strip()
     df = df.rename(columns=RENAME)
+
+    for col, default in OPTIONAL.items():
+        if col not in df.columns:
+            df[col] = default
+
     df["specimen_id"] = df["specimen_id"].str.strip()
     df["trial_id"] = path.stem.split("_")[1]
 
@@ -66,7 +73,14 @@ def load_ct_data(path):
     if missing:
         raise ValueError(f"{path.name}: missing columns {missing}")
 
-    for col in ["force_N", "line_current_A", "output_uA", "load_V", "replicate"]:
+    for col in [
+        "force_N",
+        "line_current_A",
+        "output_uA",
+        "load_V",
+        "replicate",
+        "offset_mm",
+    ]:
         if not pd.api.types.is_numeric_dtype(df[col]):
             raise ValueError(f"{path.name}: {col} not numeric")
     df = df.merge(
