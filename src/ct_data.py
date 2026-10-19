@@ -5,7 +5,15 @@ import pandas as pd
 _ROOT = Path(__file__).resolve().parent.parent
 RAW_DIR = _ROOT / "data" / "raw"
 SPECIMEN_PATH = _ROOT / "data" / "reference" / "specimens.csv"
-SPECIMEN_COLS = ["specimen_id", "id_mm", "material", "batch", "notes"]
+SPECIMEN_COLS = [
+    "specimen_id",
+    "id_mm",
+    "od_mm",
+    "width_mm",
+    "material",
+    "batch",
+    "notes",
+]
 
 
 RENAME = {
