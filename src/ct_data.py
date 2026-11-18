@@ -33,7 +33,7 @@ EXPECTED = {
     "replicate",
 }
 
-OPTIONAL = {"offset_mm": 0.0}
+OPTIONAL = {"offset_mm": 0.0, "field_tested": "no"}
 
 
 # helpers
